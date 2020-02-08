@@ -91,67 +91,6 @@ def define_imine_topology(bb1, bb2, topology, property):
     return topo_func, bb_vect
 
 
-def topo_2_property(topology, property):
-    """
-    Returns properties of a topology for a given topology name.
-
-    Properties:
-        'stoich' - gives the stoichiometries of both building blocks
-            assuming that the first building block has the larger
-            number of functional groups.
-        'noimines' - gives the number of imines formed to build that
-            topology
-        'expected_wind' - gives the number of windows expected
-
-    Currently defined topologies:
-        TwoPlusThree topologies
-        ThreePlusThree topologies
-
-    """
-    properties = ['stoich', 'noimines', 'expected_wind']
-    if property not in properties:
-        raise ValueError(
-            f'{property} not defined'
-            f'possible properties: {properties}'
-        )
-
-    dict = {
-        '2p3': {
-            'stoich': (2, 3),
-            'noimines': 6,
-            'expected_wind': 3,
-        },
-        '4p6': {
-            'stoich': (4, 6),
-            'noimines': 12,
-            'expected_wind': 4,
-        },
-        '4p62': {
-            'stoich': (4, 6),
-            'noimines': 12,
-            'expected_wind': 4,
-        },
-        '6p9': {
-            'stoich': (6, 9),
-            'noimines': 18,
-            'expected_wind': 5,
-        },
-        '1p1': {
-            'stoich': (1, 1),
-            'noimines': 3,
-            'expected_wind': 3,
-        },
-        '4p4': {
-            'stoich': (4, 4),
-            'noimines': 12,
-            'expected_wind': 6,
-        },
-    }
-    if topology not in dict:
-        raise ValueError(f'properties not defined for {topology}')
-    return dict[topology][property]
-
-
 def get_possible_topologies(no_ami_fgs, no_alde_fgs):
     """
     Determine possible topologies based on the FGs in BBs.

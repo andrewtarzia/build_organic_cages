@@ -139,7 +139,6 @@ Usage: {usage_string}
             )
             cage.write(opt_mol)
             cage.dump(opt_json)
-        sys.exit()
 
 
 if __name__ == "__main__":
