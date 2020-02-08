@@ -10,6 +10,51 @@ Author: Andrew Tarzia
 Date Created: 08 Feb 2020
 
 """
+
+import sys
+import stk
+from os import getcwd, mkdir
+from os.path import exists, join
+
+from utilities import read_settings, load_cage_list
+import cage_building
+
+
+def remove_guest(complex, cage, guest):
+    """
+    Remove guest from cage complex.
+
+    """
+    guest_ident = guest.get_identity_key()
+    # Determine building block id of host.
+    for bb in complex.get_building_blocks():
+        ident = bb.get_identity_key()
+        if ident != guest_ident:
+            print(bb)
+            bb_id = bb.id
+
+    # Get host atom ids.
+    is_host_atom = []
+    for atom in complex.atoms:
+        id = atom.id
+        print(atom, id)
+        if atom.building_block_id == bb_id:
+            is_host_atom.append(True)
+        else:
+            is_host_atom.append(False)
+
+    # Get positon matrix of host in complex.
+    pos_mat = complex.get_position_matrix()
+    print(pos_mat)
+    # Mask pos_mat with host atom ids.
+    cage_pos_mat = pos_mat[is_host_atom is True]
+    print(cage_pos_mat)
+    sys.exit()
+    # Update cage position.
+    cage.set_position_matrix(cage_pos_mat)
+    return cage
+
+
 def main():
     """
     Run script.
@@ -78,6 +123,67 @@ Usage: {usage_string}
         # Skip if done or not collapsed.
         if cage_name not in collapsed_cages:
             continue
+
+        print(cage_name)
+        print(cd)
+
+        # Read in unoptimised structure.
+        unopt_json = f'{cage_name}_unopt.json'
+        cage = stk.ConstructedMolecule.load(unopt_json)
+        # If output file not present: build cage.
+        if not exists(unopt_open_json):
+            print(
+                '.............building open form of '
+                f'{cage_name}..............'
+            )
+            # No need for guests for certain topologies.
+            # In those cages, we just apply a shorter optimisation.
+            if cd['topo'] in ['1p1', '2p3']:
+                cage_guest = cage.deepcopy()
+            else:
+                cage_guest = cage_building.build_cage_complex(
+                    host=cage,
+                    guest=guest
+                )
+            cage_guest.write(unopt_open_mol)
+            cage_guest.dump(unopt_open_json)
+        else:
+            cage_guest = stk.ConstructedMolecule.load(unopt_open_json)
+
+        sys.exit('view cage guest')
+
+        # If output file not present: optimize cage.
+        if not exists(opt_open_json):
+            print(
+                '.............optimizing open form of '
+                f'{cage_name}..............'
+            )
+            # Optimze cage with guest.
+            cage_guest = cage_building.FF_optimize_open_cage(
+                name=cage_name,
+                cage=cage,
+                output_dir=macromod_output,
+                macromodel_path=macromod_
+            )
+
+            # Write complexed structure out.
+            cage_guest.write(opt_compl_mol)
+            cage_guest.dump(opt_compl_json)
+            sys.exit('view cage guest opt')
+
+            # Remove guest if present.
+            if cd['topo'] in ['1p1', '2p3']:
+                cage = cage_guest.deepcopy()
+            else:
+                cage = remove_guest(
+                    comlex=cage_guest,
+                    cage=cage,
+                    guest=guest
+                )
+
+            cage.write(opt_open_mol)
+            cage.dump(opt_open_json)
+            sys.exit('view cage opened opt')
 
         sys.exit()
 

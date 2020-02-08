@@ -147,6 +147,18 @@ def build_cage(bb1, bb2, topology, bb_vert=None):
     return cage
 
 
+def build_cage_complex(host, guest):
+    """
+    Build cage complex with stk.
+
+    """
+    complex = stk.ConstructedMolecule(
+        building_blocks=[host, guest],
+        topology_graph=stk.host_guest.Complex()
+    )
+    return complex
+
+
 def FF_optimize_cage(
     name,
     cage,
@@ -183,6 +195,32 @@ def FF_optimize_cage(
     seq = stk.Sequence(ff, md)
     seq.optimize(mol=cage)
     return cage
+
+
+def FF_optimize_open_cage(
+    name,
+    complex,
+    output_dir,
+    macromodel_path
+):
+    """
+    Crudely optimize cage complex with stk.
+
+    """
+
+    ff_res = stk.MacroModelForceField(
+        macromodel_path=macromodel_path,
+        output_dir=join(output_dir, f'{name}_FFResout'),
+        restricted=True
+    )
+    ff_unres = stk.MacroModelForceField(
+        macromodel_path=macromodel_path,
+        output_dir=join(output_dir, f'{name}_FFUnresout'),
+        restricted=False
+    )
+    seq = stk.Sequence(ff_res, ff_unres)
+    seq.optimize(mol=complex)
+    return complex
 
 
 def get_settings(opt_type):
