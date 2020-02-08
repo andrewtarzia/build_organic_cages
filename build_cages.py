@@ -99,6 +99,47 @@ Usage: {usage_string}
     print(f'.............{len(cage_dct)} cages to build.............')
 
     # Build and optimise cages.
+    for cage_name in cage_dct:
+        print(cage_name)
+        cd = cage_dct[cage_name]
+        print(cd)
+        unopt_mol = f'{cage_name}_unopt.mol'
+        unopt_json = f'{cage_name}_unopt.json'
+        opt_mol = f'{cage_name}_opt.mol'
+        opt_json = f'{cage_name}_opt.json'
+        # If output file not present: build cage.
+        if not exists(unopt_json):
+            print(f'.............building {cage_name}..............')
+            topo_info = cage_building.define_imine_topology(
+                bb1=alde_dct[cd['alde']]['stk_molecule'],
+                bb2=amine_dct[cd['ami']]['stk_molecule'],
+                topology=cd['topo'],
+                property='stk_func'
+            )
+            cage = cage_building.build_cage(
+                bb1=alde_dct[cd['alde']]['stk_molecule'],
+                bb2=amine_dct[cd['ami']]['stk_molecule'],
+                topology=topo_info[0],
+                bb_vert=topo_info[1]
+            )
+            cage.write(unopt_mol)
+            cage.dump(unopt_json)
+        else:
+            cage = stk.ConstructedMolecule.load(unopt_json)
+
+        # If output file not present: optimize cage.
+        if not exists(opt_json):
+            print(f'.............optimizing {cage_name}...........')
+            cage = cage_building.FF_optimize_cage(
+                name=cage_name,
+                cage=cage,
+                settings=cage_building.get_settings(opt_type),
+                output_dir=macromod_output,
+                macromodel_path=macromod_
+            )
+            cage.write(opt_mol)
+            cage.dump(opt_json)
+        sys.exit()
 
 
 if __name__ == "__main__":

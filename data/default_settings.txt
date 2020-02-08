@@ -1,1 +1,1 @@
-macromod_:'/home/atarzia/software/schrodinger_install'
+macromod_:/home/atarzia/software/schrodinger_install
