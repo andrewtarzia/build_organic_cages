@@ -67,20 +67,20 @@ def read_settings(file):
     return params
 
 
-def read_mol_list(file):
+def read_mol_dict(file):
     """
-    Read list of molecules from file.
+    Read dict of molecules from file.
 
     Returns
     -------
-    molecules : :class:`list` of :class:`dict`
-        List of molecule definitions.
+    molecules : :class:`dict` of :class:`dict`
+        Dictionary of molecule definitions with `key` = name.
 
     """
     with open(file, 'r') as f:
         lines = f.readlines()
 
-    molecules = []
+    molecules = {}
     for line in lines:
         molecule = {}
         name, method, smiles = line.rstrip().split(',')
@@ -88,7 +88,7 @@ def read_mol_list(file):
         molecule['method'] = method
         molecule['smiles'] = smiles
         molecule['file'] = f'{name}.mol'
-        molecules.append(molecule)
+        molecules[name] = molecule
 
     return molecules
 
@@ -160,7 +160,7 @@ def save_svg(filename, string):
         f.write(string)
 
 
-def viz_precursors(lst, out):
+def viz_precursors(dct, out):
     """
     Make RDKit image of lst of molecules.
 
@@ -168,11 +168,11 @@ def viz_precursors(lst, out):
 
     mol_list = [
         Chem.MolFromSmiles(
-            Chem.MolToSmiles(Chem.MolFromMolFile(i['file']))
+            Chem.MolToSmiles(Chem.MolFromMolFile(dct[i]['file']))
         )
-        for i in lst
+        for i in dct
     ]
-    mol_names = [i['name'] for i in lst]
+    mol_names = [dct[i]['name'] for i in dct]
     mol_list2grid(
         molecules=mol_list,
         names=mol_names,

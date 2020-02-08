@@ -15,36 +15,36 @@ import stk
 from itertools import product
 
 
-def load_amines(amine_list):
+def load_amines(amine_dct):
     # Load in amines.
-    for m in amine_list:
-        if m['method'] == 'file':
+    for m in amine_dct:
+        if amine_dct[m]['method'] == 'file':
             molecule = stk.BuildingBlock.init_from_file(
-                m['file'], ['amine']
+                amine_dct[m]['file'], ['amine']
             )
-        elif m['method'] == 'smiles':
+        elif amine_dct[m]['method'] == 'smiles':
             molecule = stk.BuildingBlock(
-                m['smiles'], ['amine']
+                amine_dct[m]['smiles'], ['amine']
             )
-        m['stk_molecule'] = molecule
+        amine_dct[m]['stk_molecule'] = molecule
 
-    return amine_list
+    return amine_dct
 
 
-def load_aldehydes(alde_list):
+def load_aldehydes(alde_dct):
     # Load in aldehydes.
-    for m in alde_list:
-        if m['method'] == 'file':
+    for m in alde_dct:
+        if alde_dct[m]['method'] == 'file':
             molecule = stk.BuildingBlock.init_from_file(
-                m['file'], ['aldehyde']
+                alde_dct[m]['file'], ['aldehyde']
             )
-        elif m['method'] == 'smiles':
+        elif alde_dct[m]['method'] == 'smiles':
             molecule = stk.BuildingBlock(
-                m['smiles'], ['aldehyde']
+                alde_dct[m]['smiles'], ['aldehyde']
             )
-        m['stk_molecule'] = molecule
+        alde_dct[m]['stk_molecule'] = molecule
 
-    return alde_list
+    return alde_dct
 
 
 def topo_2_property(topology, property):
@@ -152,7 +152,7 @@ def get_possible_topologies(no_ami_fgs, no_alde_fgs):
     return pos_topo
 
 
-def determine_cage_list(amine_list, alde_list):
+def determine_cage_list(amine_dct, alde_dct):
     """
     Determines complete cage list to be built from precursors.
 
@@ -160,20 +160,24 @@ def determine_cage_list(amine_list, alde_list):
 
     """
 
-    cage_list = {}
+    cage_dct = {}
 
     # Iterate over amine-aldehyde pairs.
-    iteration = product(amine_list, alde_list)
-    for ami, alde in iteration:
+    iteration = product(amine_dct, alde_dct)
+    for ami_k, alde_k in iteration:
+        ami = amine_dct[ami_k]
+        alde = alde_dct[alde_k]
         no_ami_fgs = len(ami['stk_molecule'].func_groups)
         no_alde_fgs = len(alde['stk_molecule'].func_groups)
         # Get possible topologies.
         pos_topo = get_possible_topologies(no_ami_fgs, no_alde_fgs)
         for topo in pos_topo:
             cage_name = f"{alde['name']}_{ami['name']}_{topo}"
-            cage_list[cage_name] = {}
-            cage_list[cage_name]['ami'] = ami['name']
-            cage_list[cage_name]['alde'] = alde['name']
-            cage_list[cage_name]['topo'] = topo
+            cage_dct[cage_name] = {}
+            cage_dct[cage_name]['ami'] = ami['name']
+            cage_dct[cage_name]['alde'] = alde['name']
+            cage_dct[cage_name]['topo'] = topo
+
+    return cage_dct
 
     return cage_list
